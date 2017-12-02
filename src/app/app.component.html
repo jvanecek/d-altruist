@@ -1,0 +1,58 @@
+<div class="container">
+  <div class="row">
+    <div class="col-md-6">
+
+      <h1>Haz una donación</h1>
+      <form>
+        <div class="form-group">
+          <div class="input-group" style="width:100%" >
+            <input #beneficiaryAddress  style="width:100%" type="text" class="form-control" placeholder="Address" aria-describedby="basic-addon1">
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="input-group">
+            <input #donatedAmount type="text" class="form-control" placeholder="Monto a donar">
+            <span class="input-group-addon">Wei</span>
+          </div>
+        </div>
+        <div class="form-group">
+          Balance Disponible <strong>{{ currentAddressBalance || 0 }} Wei</strong>
+        </div>
+        <div class="form-group">
+          <button class="btn btn-default" (click)="donateTo(beneficiaryAddress.value, donatedAmount.value)">Donar</button>
+        </div>
+      </form>
+    </div>
+    <div class="col-md-6">
+      <div *ngIf="hasOpenDonationCampaign;then withdrawlBlock else createDonationBlock"></div>
+      <ng-template #withdrawlBlock>
+
+          <h1>Campaña activa</h1>
+          <div>Donado hasta el momento: <strong>{{ currentDonatedAmount || 0 }} Wei</strong> ({{ completedPercentage() }})</div>
+          <div class="form-group">Promocionala para que te manden a <code>{{ currentAddress }}</code></div>
+
+          <div class="form-group">
+            <button class="btn btn-default" (click)="withdrawlDonation()" ng-if="canWithdrawl">Retirar fondos</button>
+          </div>
+      </ng-template>
+      <ng-template #createDonationBlock >
+        <div class="row">
+          <h1>Crea una campaña</h1>
+        </div>
+        <div class="row">
+          <form>
+            <div class="form-group">
+              <div class="input-group">
+                <input #minimumForWithdrawl type="text" class="form-control" placeholder="Monto de Salida">
+                <span class="input-group-addon">Wei</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <button class="btn btn-default" (click)="createDonationCampaing(minimumForWithdrawl.value)">Crear</button>
+            </div>
+          </form>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

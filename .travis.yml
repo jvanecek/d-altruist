@@ -1,0 +1,11 @@
+sudo: required
+language: node_js
+node_js:
+  - "8"
+before_script:
+  - npm install -g truffle
+  - npm install -g ethereumjs-testrpc
+  - ./script/start_rpc.sh > /dev/null &
+  - sleep 5
+script:
+  - truffle migrate; truffle test
