@@ -5,7 +5,5 @@ node_js:
 before_script:
   - npm install -g truffle
   - npm install -g ethereumjs-testrpc
-  - ./script/start_rpc.sh > /dev/null &
-  - sleep 5
 script:
-  - truffle migrate; truffle test
+  - truffle test --network test
