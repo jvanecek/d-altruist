@@ -13,7 +13,7 @@ export class AppComponent {
   currentAddressBalance: any;
   currentDonatedAmount: any;
   hasOpenDonationCampaign: boolean;
-  withdrawlMinimum: any;
+  minimumWithdrawl: any;
   canWithdrawl: any;
 
   constructor(private contracts: ContractsService, private web3Service: Web3Service) {}
@@ -36,30 +36,30 @@ export class AppComponent {
 
   initializeCurrentAddressBalance(){
     this.web3Service.web3.eth.getBalance(this.currentAddress).then((balance)=>{
-      console.log( 'Current address balance: '+balance);
+      console.log( 'Balance actual: '+balance);
       this.currentAddressBalance = balance;
     })
   }
 
   createDonationCampaing(value){
-    this.contracts.DonatorInstance.createNew(value, {from: this.currentAddress});
+    this.contracts.DonationCampaignInstance.openNew(value, {from: this.currentAddress});
     this.refreshCurrentDonationStatus();
   }
 
   refreshCurrentDonationStatus(){
-    this.contracts.DonatorInstance.donationStatus({from: this.currentAddress})
+    this.contracts.DonationCampaignInstance.donationStatus({from: this.currentAddress})
       .then((result)=>{
         console.log( 'Estado de la campana de '+this.currentAddress);
         console.log( result );
         this.hasOpenDonationCampaign = result[0];
         this.currentDonatedAmount = result[1].toNumber();
-        this.withdrawlMinimum = result[2].toNumber();
-        this.canWithdrawl = this.currentDonatedAmount >= this.withdrawlMinimum;
+        this.minimumWithdrawl = result[2].toNumber();
+        this.canWithdrawl = this.currentDonatedAmount >= this.minimumWithdrawl;
     });
   }
-
+ 
   donateTo(beneficiaryAddress, donatedAmount){
-    this.contracts.DonatorInstance
+    this.contracts.DonationCampaignInstance
       .donate(beneficiaryAddress, {from: this.currentAddress, value: donatedAmount})
       .then(()=>{
         console.log( 'Donacion exitosa de '+this.currentAddress+' a '+beneficiaryAddress+' por '+donatedAmount );
@@ -69,12 +69,12 @@ export class AppComponent {
   }
 
   completedPercentage(){
-    return Math.floor((this.currentDonatedAmount / this.withdrawlMinimum) * 100) + '%';
+    return Math.floor((this.currentDonatedAmount / this.minimumWithdrawl) * 100) + '%';
   }
 
   withdrawlDonation(){
-    this.contracts.DonatorInstance
-      .withdrawl({from: this.currentAddress})
+    this.contracts.DonationCampaignInstance
+      .withdrawlAndClose({from: this.currentAddress})
       .then((result)=>{
         console.log( result );
       },(err)=>{

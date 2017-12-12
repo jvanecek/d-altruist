@@ -1,4 +1,4 @@
-var Donator = artifacts.require("../contracts/Donator.sol");
+var DonationCampaign = artifacts.require("../contracts/DonationCampaign.sol");
 
 async function expectThrow(promise,descriptionOnNoThrow){
   try {
@@ -22,7 +22,7 @@ async function expectThrow(promise,descriptionOnNoThrow){
   assert.fail(descriptionOnNoThrow);
 };
 
-contract('Donator', function(accounts) {
+contract('DonationCampaign', function(accounts) {
 
   let campaingOpener = accounts[0];
   let donator = accounts[1];
@@ -32,10 +32,10 @@ contract('Donator', function(accounts) {
   let campaingOpenerInitialBalance = 0;
 
   // Calculada como la resta entre el balance antes y despues de ejecutarla
-  // let createNewGasCost = 4223999940755456;
+  // let openNewGasCost = 4223999940755456;
 
   beforeEach(async function() {
-    donatorContract = await Donator.new();
+    donatorContract = await DonationCampaign.new();
     campaingOpenerInitialBalance = await web3.eth.getBalance(campaingOpener);
     donatorInitialBalance = await web3.eth.getBalance(donator);
   });
@@ -45,7 +45,7 @@ contract('Donator', function(accounts) {
     let hasOpenedDonationCampaign = await donatorContract.hasOpenDonationCampaign({from: campaingOpener});
     assert.isFalse( hasOpenedDonationCampaign );
 
-    await donatorContract.createNew(90000, {from: campaingOpener});
+    await donatorContract.openNew(90000, {from: campaingOpener});
 
     hasOpenedDonationCampaign = await donatorContract.hasOpenDonationCampaign({from: campaingOpener});
     assert.isTrue( hasOpenedDonationCampaign );
@@ -56,18 +56,18 @@ contract('Donator', function(accounts) {
 
   it("Donation affects involved balances", async function() {
 
-    await donatorContract.createNew(90000, {from: campaingOpener});
+    await donatorContract.openNew(90000, {from: campaingOpener});
 
-    let balanceOfCampaign = await donatorContract.donatedBalance({from: campaingOpener});
+    let balanceOfCampaign = await donatorContract.donationsReceived({from: campaingOpener});
     assert.equal( balanceOfCampaign, 0 );
 
     let balanceToDonate = 50000;
     await donatorContract.donate(campaingOpener, {from: donator, value: balanceToDonate});
 
-    balanceOfCampaign = await donatorContract.donatedBalance({from: campaingOpener});
+    balanceOfCampaign = await donatorContract.donationsReceived({from: campaingOpener});
     assert.equal( balanceOfCampaign.toNumber(), balanceToDonate );
 
-    let balanceOfOthersCampaign = await donatorContract.donatedBalance({from: donator});
+    let balanceOfOthersCampaign = await donatorContract.donationsReceived({from: donator});
     assert.equal( balanceOfOthersCampaign.toNumber(), 0 );
 
   });
@@ -75,25 +75,25 @@ contract('Donator', function(accounts) {
   it("Cant withdrawl if minimum donation not completed", async function(){
 
     let balanceToWithrawl = 90000;
-    await donatorContract.createNew(balanceToWithrawl, {from: campaingOpener});
-    expectThrow( donatorContract.withdrawl({ from: campaingOpener }), "No se dono nada todavia");
+    await donatorContract.openNew(balanceToWithrawl, {from: campaingOpener});
+    expectThrow( donatorContract.withdrawlAndClose({ from: campaingOpener }), "No se dono nada todavia");
 
     await donatorContract.donate(campaingOpener, {from: donator, value: 70000});
-    expectThrow( donatorContract.withdrawl({ from: campaingOpener }), "Se dono solamente 70000");
+    expectThrow( donatorContract.withdrawlAndClose({ from: campaingOpener }), "Se dono solamente 70000");
 
     await donatorContract.donate(campaingOpener, {from: anotherDonator, value: 20000});
 
     let hasOpenedDonationCampaign = await donatorContract.hasOpenDonationCampaign({from: campaingOpener});
     assert.isTrue( hasOpenedDonationCampaign );
 
-    await donatorContract.withdrawl({ from: campaingOpener });
+    await donatorContract.withdrawlAndClose({ from: campaingOpener });
 
     hasOpenedDonationCampaign = await donatorContract.hasOpenDonationCampaign({from: campaingOpener});
     assert.isFalse( hasOpenedDonationCampaign );
     /*
     let campaignOpenerCurrentBalance = await web3.eth.getBalance(campaingOpener);
     assert.equal(
-      campaingOpenerInitialBalance.toNumber() - createNewGasCost + balanceToWithrawl,
+      campaingOpenerInitialBalance.toNumber() - openNewGasCost + balanceToWithrawl,
       campaignOpenerCurrentBalance.toNumber() )
     */
   });

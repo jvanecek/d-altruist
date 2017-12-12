@@ -5,7 +5,7 @@ import Web3 from 'web3';
 import { Web3Service } from './web3.service';
 import getWeb3 from '../util/get-web3'
 
-import DonatorContract from '../../../build/contracts/Donator.json';
+import DonationCampaignContract from '../../../build/contracts/DonationCampaign.json';
 
 declare let window: any;
 
@@ -13,8 +13,8 @@ declare let window: any;
 export class ContractsService {
   public initialized: boolean = false;
 
-  public Donator: any;
-  public DonatorInstance: any;
+  public DonationCampaign: any;
+  public DonationCampaignInstance: any;
 
   constructor(private web3Service: Web3Service) {
     window.addEventListener('load', (event) => {
@@ -53,9 +53,10 @@ export class ContractsService {
 
     console.log( "Por inicializar los contratos" );
 
-    await this.web3Service.artifactsToContract(DonatorContract)
-      .then((DonatorContractAbstraction) => this.Donator = DonatorContractAbstraction);
-    this.DonatorInstance = await this.Donator.deployed();
+    await this.web3Service.artifactsToContract(DonationCampaignContract)
+      .then(DonationCampaignContractAbstraction => this.DonationCampaign = DonationCampaignContractAbstraction
+      );
+    this.DonationCampaignInstance = await this.DonationCampaign.deployed();
 
     console.log( "Contratos inicializados." );
 
